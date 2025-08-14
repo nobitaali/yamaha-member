@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, Trophy, Clock, TrendingUp, Star, Gift, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency } from '../utils/format';
@@ -7,10 +7,48 @@ import Sidebar from '../components/Layout/Sidebar';
 import StatsCard from '../components/UI/StatsCard';
 import ProgressRing from '../components/UI/ProgressRing';
 import AnimatedCounter from '../components/UI/AnimatedCounter';
+import { dataService } from '../services/dataService';
+import { Task, Submission, Transaction } from '../types';
+import { mockLeaderboard } from '../data/mockData';
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
+  const [recentTasks, setRecentTasks] = useState<Task[]>([]);
+  const [userSubmissions, setUserSubmissions] = useState<Submission[]>([]);
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      if (!user) return;
+      
+      try {
+        // Load recent tasks
+        const tasks = await dataService.getTasks({ status: 'active' });
+        setRecentTasks(tasks.slice(0, 3));
+
+        // Load user submissions
+        const submissions = await dataService.getSubmissions({ userId: user.id });
+        setUserSubmissions(submissions);
+
+        // Load user transactions
+        const transactions = await dataService.getTransactions(user.id);
+        setUserTransactions(transactions.slice(0, 5));
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [user]);
+
+  const completedTasks = userSubmissions.filter(s => s.status === 'approved').length;
+  const activeTasks = userSubmissions.filter(s => s.status === 'pending').length;
+  const totalPoints = completedTasks * 100 + Math.floor(Math.random() * 500); // Mock points calculation
+  const userRank = mockLeaderboard.find(l => l.userId === user?.id)?.rank || Math.floor(Math.random() * 10) + 1;
 
   const stats = [
     {
@@ -24,52 +62,28 @@ export default function Dashboard() {
     },
     {
       label: 'Tugas Selesai',
-      value: 12,
+      value: completedTasks,
       icon: Trophy,
       color: 'bg-gradient-to-r from-[#003399] to-blue-600',
-      change: '+3 minggu ini',
+      change: `+${Math.floor(completedTasks / 3)} minggu ini`,
       trend: 'up' as const,
       animated: true
     },
     {
       label: 'Tugas Aktif',
-      value: 3,
+      value: activeTasks,
       icon: Clock,
       color: 'bg-gradient-to-r from-orange-500 to-amber-500',
       animated: true
     },
     {
       label: 'Total Poin',
-      value: 2450,
+      value: totalPoints,
       icon: TrendingUp,
       color: 'bg-gradient-to-r from-purple-500 to-indigo-500',
-      change: '+180 poin',
+      change: `+${Math.floor(totalPoints * 0.1)} poin`,
       trend: 'up' as const,
       animated: true
-    }
-  ];
-
-  const recentTasks = [
-    {
-      id: '1',
-      title: 'Review Service Yamaha',
-      reward: 50000,
-      deadline: '2025-01-20',
-      status: 'active'
-    },
-    {
-      id: '2',
-      title: 'Share Foto Motor di Social Media',
-      reward: 25000,
-      deadline: '2025-01-18',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      title: 'Survey Kepuasan Pelanggan',
-      reward: 30000,
-      deadline: '2025-01-25',
-      status: 'active'
     }
   ];
 

@@ -1,88 +1,104 @@
-import React, { useState } from 'react';
-import { Filter, Search, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Filter, Search, Sparkles, RefreshCw } from 'lucide-react';
 import Header from '../components/Layout/Header';
 import Sidebar from '../components/Layout/Sidebar';
 import TaskCard from '../components/UI/TaskCard';
 import FloatingActionButton from '../components/UI/FloatingActionButton';
+import { Task } from '../types';
+import { dataService } from '../services/dataService';
+import { formatCurrency } from '../utils/format';
 
 export default function Tasks() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const tasks = [
-    {
-      id: '1',
-      title: 'Review Service Yamaha',
-      description: 'Berikan review pengalaman service motor Yamaha Anda dan upload foto struk service.',
-      reward: 50000,
-      deadline: '2025-01-20',
-      category: 'service',
-      location: 'Semua Dealer',
-      requirements: ['Foto struk service', 'Review min. 50 kata', 'Rating 1-5 bintang'],
-      participants: 245,
-      maxParticipants: 500
-    },
-    {
-      id: '2',
-      title: 'Share Foto Motor di Social Media',
-      description: 'Posting foto motor Yamaha Anda di Instagram/Facebook dengan hashtag #YamahaIndonesia',
-      reward: 25000,
-      deadline: '2025-01-25',
-      category: 'social',
-      location: 'Online',
-      requirements: ['Posting di Instagram/Facebook', 'Hashtag #YamahaIndonesia', 'Tag 3 teman'],
-      participants: 1230,
-      maxParticipants: 2000
-    },
-    {
-      id: '3',
-      title: 'Survey Kepuasan Pelanggan Q1 2025',
-      description: 'Isi survey kepuasan pelanggan untuk membantu Yamaha meningkatkan layanan.',
-      reward: 30000,
-      deadline: '2025-01-30',
-      category: 'survey',
-      location: 'Online',
-      requirements: ['Lengkapi semua pertanyaan', 'Submit dalam 1x kesempatan'],
-      participants: 856,
-      maxParticipants: 1000
-    },
-    {
-      id: '4',
-      title: 'Test Ride Yamaha NMAX',
-      description: 'Ikuti test ride NMAX terbaru dan berikan feedback pengalaman berkendara.',
-      reward: 75000,
-      deadline: '2025-01-22',
-      category: 'testride',
-      location: 'Dealer Jakarta, Bandung, Surabaya',
-      requirements: ['Hadir di dealer', 'SIM C aktif', 'Form feedback'],
-      participants: 89,
-      maxParticipants: 150
-    }
-  ];
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const categories = [
     { value: 'all', label: 'Semua' },
     { value: 'service', label: 'Service' },
     { value: 'social', label: 'Social Media' },
     { value: 'survey', label: 'Survey' },
-    { value: 'testride', label: 'Test Ride' }
+    { value: 'testride', label: 'Test Ride' },
+    { value: 'content', label: 'Content' },
+    { value: 'event', label: 'Event' },
+    { value: 'referral', label: 'Referral' },
+    { value: 'workshop', label: 'Workshop' }
   ];
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesCategory = selectedCategory === 'all' || task.category === selectedCategory;
-    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const loadTasks = async () => {
+    try {
+      const filters = {
+        category: selectedCategory,
+        search: searchQuery,
+        status: 'active'
+      };
+      const tasksData = await dataService.getTasks(filters);
+      setTasks(tasksData);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleTakeTask = (taskId: string) => {
-    alert(`Mengambil tugas dengan ID: ${taskId}`);
+  const refreshTasks = async () => {
+    setRefreshing(true);
+    await loadTasks();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, [selectedCategory, searchQuery]);
+
+  const filteredTasks = tasks;
+
+  const handleTakeTask = async (taskId: string) => {
+    try {
+      // In a real app, this would create a submission or mark task as taken
+      alert(`Mengambil tugas dengan ID: ${taskId}`);
+      // You could navigate to a submission form here
+    } catch (error) {
+      console.error('Error taking task:', error);
+      alert('Gagal mengambil tugas. Silakan coba lagi.');
+    }
   };
 
   const handleViewDetails = (taskId: string) => {
+    // In a real app, this would navigate to task details page
     alert(`Melihat detail tugas dengan ID: ${taskId}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header
+            title="Tugas Tersedia"
+            onMenuClick={() => setSidebarOpen(true)}
+          />
+          
+          <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-4">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-[#003399] rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <Sparkles className="text-white" size={24} />
+                  </div>
+                  <p className="text-gray-600">Memuat tugas...</p>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -107,7 +123,7 @@ export default function Tasks() {
                 <p className="text-blue-100 mb-4">
                   {filteredTasks.length} tugas menanti Anda dengan total reward hingga{' '}
                   <span className="font-bold text-yellow-400">
-                    Rp {filteredTasks.reduce((sum, task) => sum + task.reward, 0).toLocaleString('id-ID')}
+                    {formatCurrency(filteredTasks.reduce((sum, task) => sum + task.reward, 0))}
                   </span>
                 </p>
                 <div className="flex items-center space-x-4 text-sm">
@@ -122,6 +138,10 @@ export default function Tasks() {
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-purple-400 rounded-full" />
                     <span>{filteredTasks.filter(t => t.category === 'testride').length} Test Ride</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full" />
+                    <span>{filteredTasks.filter(t => t.category === 'content').length} Content</span>
                   </div>
                 </div>
               </div>
@@ -167,7 +187,15 @@ export default function Tasks() {
               {filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
-                  task={task}
+                  task={{
+                    ...task,
+                    deadline: task.deadline.toISOString().split('T')[0],
+                    participants: Math.floor(Math.random() * 500) + 50,
+                    maxParticipants: Math.floor(Math.random() * 1000) + 500,
+                    location: task.category === 'testride' ? 'Dealer Jakarta, Bandung, Surabaya' : 
+                             task.category === 'workshop' ? 'Training Center Yamaha' :
+                             task.category === 'event' ? 'Yamaha Heritage Museum' : 'Online'
+                  }}
                   onTakeTask={handleTakeTask}
                   onViewDetails={handleViewDetails}
                 />
@@ -194,8 +222,8 @@ export default function Tasks() {
             )}
             
             <FloatingActionButton
-              onClick={() => alert('Refresh tugas')}
-              icon={<Sparkles size={24} />}
+              onClick={refreshTasks}
+              icon={<RefreshCw size={24} className={refreshing ? 'animate-spin' : ''} />}
             />
           </div>
         </main>

@@ -1,90 +1,66 @@
-import React, { useState } from 'react';
-import { Wallet, ArrowUpRight, ArrowDownLeft, Gift, CreditCard, TrendingUp, Download } from 'lucide-react';
-import { formatCurrency } from '../utils/format';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Gift, Star, Clock, ShoppingBag, Filter, Search } from 'lucide-react';
 import Header from '../components/Layout/Header';
 import Sidebar from '../components/Layout/Sidebar';
-import AnimatedCounter from '../components/UI/AnimatedCounter';
-import ProgressRing from '../components/UI/ProgressRing';
+import { useAuth } from '../contexts/AuthContext';
+import { formatCurrency } from '../utils/format';
+import { dataService } from '../services/dataService';
+import { mockRewards } from '../data/mockData';
 
 export default function Rewards() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('balance');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [rewards, setRewards] = useState(mockRewards);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const transactions = [
-    {
-      id: '1',
-      type: 'reward',
-      amount: 50000,
-      description: 'Reward Review Service Yamaha',
-      date: '2025-01-15',
-      status: 'completed'
-    },
-    {
-      id: '2',
-      type: 'withdrawal',
-      amount: -25000,
-      description: 'Penarikan ke OVO',
-      date: '2025-01-14',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      type: 'reward',
-      amount: 30000,
-      description: 'Reward Survey Kepuasan',
-      date: '2025-01-12',
-      status: 'completed'
-    },
-    {
-      id: '4',
-      type: 'withdrawal',
-      amount: -50000,
-      description: 'Penarikan ke Bank BCA',
-      date: '2025-01-10',
-      status: 'pending'
-    }
+  const categories = [
+    { value: 'all', label: 'Semua' },
+    { value: 'service', label: 'Service' },
+    { value: 'merchandise', label: 'Merchandise' },
+    { value: 'accessories', label: 'Aksesoris' },
+    { value: 'experience', label: 'Experience' }
   ];
 
-  const withdrawalMethods = [
-    {
-      id: 'ovo',
-      name: 'OVO',
-      icon: '💜',
-      minAmount: 25000,
-      fee: 2500,
-      description: 'Transfer langsung ke akun OVO'
-    },
-    {
-      id: 'gopay',
-      name: 'GoPay',
-      icon: '💚',
-      minAmount: 25000,
-      fee: 2500,
-      description: 'Transfer langsung ke akun GoPay'
-    },
-    {
-      id: 'dana',
-      name: 'DANA',
-      icon: '💙',
-      minAmount: 25000,
-      fee: 2500,
-      description: 'Transfer langsung ke akun DANA'
-    },
-    {
-      id: 'bank',
-      name: 'Transfer Bank',
-      icon: '🏦',
-      minAmount: 50000,
-      fee: 5000,
-      description: 'Transfer ke rekening bank'
-    }
-  ];
+  const filteredRewards = rewards.filter(reward => {
+    const matchesCategory = selectedCategory === 'all' || reward.category === selectedCategory;
+    const matchesSearch = reward.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         reward.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  const handleWithdrawal = (method: string) => {
-    // In real app, open withdrawal modal
-    alert(`Membuka form penarikan untuk ${method}`);
+  const handleRedeem = async (rewardId: string) => {
+    if (!user) return;
+    
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) return;
+
+    if (user.balance < reward.points) {
+      alert('Saldo poin tidak mencukupi!');
+      return;
+    }
+
+    if (reward.stock <= 0) {
+      alert('Stok reward habis!');
+      return;
+    }
+
+    try {
+      const success = await dataService.redeemReward(user.id, rewardId);
+      if (success) {
+        alert(`Berhasil menukar ${reward.title}! Reward akan dikirim dalam 3-5 hari kerja.`);
+        // Refresh rewards to update stock
+        setRewards(prev => prev.map(r => 
+          r.id === rewardId ? { ...r, stock: r.stock - 1 } : r
+        ));
+      } else {
+        alert('Gagal menukar reward. Silakan coba lagi.');
+      }
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    }
   };
 
   return (
@@ -93,208 +69,162 @@ export default function Rewards() {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
-          title="Reward & Saldo"
+          title="Rewards"
           onMenuClick={() => setSidebarOpen(true)}
         />
         
         <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-4">
           <div className="max-w-7xl mx-auto">
-            {/* Balance Card */}
-            <div className="bg-gradient-to-r from-[#003399] to-blue-600 text-white rounded-3xl p-8 mb-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white bg-opacity-10 rounded-full -translate-y-20 translate-x-20" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white bg-opacity-5 rounded-full translate-y-16 -translate-x-16" />
-              
+            {/* Hero Section */}
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-6 mb-6 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -translate-y-16 translate-x-16" />
               <div className="relative z-10">
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Wallet size={24} />
-                    <p className="text-blue-100 text-lg font-medium">Total Saldo Reward</p>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Gift className="text-yellow-400" size={24} />
+                  <h2 className="text-2xl font-bold">Tukar Poin Anda</h2>
+                </div>
+                <p className="text-purple-100 mb-4">
+                  Saldo poin Anda:{' '}
+                  <span className="font-bold text-yellow-400 text-xl">
+                    {user?.balance?.toLocaleString('id-ID') || '0'} poin
+                  </span>
+                </p>
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <Star className="text-yellow-400" size={16} />
+                    <span>Reward Eksklusif</span>
                   </div>
-                  <div className="text-4xl font-bold mb-4">
-                    <AnimatedCounter 
-                      value={user?.balance || 0} 
-                      prefix="Rp " 
-                      className="text-4xl font-bold"
+                  <div className="flex items-center space-x-1">
+                    <Clock className="text-yellow-400" size={16} />
+                    <span>Pengiriman 3-5 Hari</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <ShoppingBag className="text-yellow-400" size={16} />
+                    <span>{filteredRewards.length} Item Tersedia</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-gray-100">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Cari reward..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
                     />
-                  </div>
-                  <div className="flex items-center space-x-4 text-sm">
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp size={16} className="text-green-400" />
-                      <span className="text-green-400 font-semibold">+25% bulan ini</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Gift size={16} className="text-yellow-400" />
-                      <span className="text-blue-100">12 reward diterima</span>
-                    </div>
                   </div>
                 </div>
                 
-                <div className="mt-6 pt-6 border-t border-blue-400">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-sm">Minimum penarikan</p>
-                      <p className="font-semibold">{formatCurrency(25000)}</p>
-                    </div>
-                    <button className="bg-white text-[#003399] px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 shadow-lg">
-                      <Download size={18} />
-                      <span>Tarik Dana</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Reward Bulan Ini</p>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(125000)}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="text-green-600" size={24} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Total Penarikan</p>
-                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(75000)}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <ArrowUpRight className="text-blue-600" size={24} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Transaksi Pending</p>
-                    <p className="text-2xl font-bold text-orange-600">1</p>
-                  </div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <CreditCard className="text-orange-600" size={24} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
-              <div className="border-b border-gray-100">
-                <nav className="flex">
-                  <button
-                    onClick={() => setActiveTab('balance')}
-                    className={`flex-1 py-4 px-6 text-center font-semibold transition-all duration-200 ${
-                      activeTab === 'balance'
-                        ? 'text-[#003399] border-b-3 border-[#003399] bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
+                {/* Category Filter */}
+                <div className="flex items-center space-x-3">
+                  <Filter size={20} className="text-gray-400" />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
                   >
-                    Riwayat Saldo
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('withdraw')}
-                    className={`flex-1 py-4 px-6 text-center font-semibold transition-all duration-200 ${
-                      activeTab === 'withdraw'
-                        ? 'text-[#003399] border-b-3 border-[#003399] bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Penarikan
-                  </button>
-                </nav>
-              </div>
-
-              <div className="p-6">
-                {activeTab === 'balance' && (
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-gray-900 mb-6 text-lg">Riwayat Transaksi</h3>
-                    {transactions.map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-5 border border-gray-100 rounded-2xl hover:shadow-md transition-all duration-200 hover:border-[#003399]">
-                        <div className="flex items-center space-x-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${
-                            transaction.type === 'reward' ? 'bg-green-100' : 'bg-red-100'
-                          }`}>
-                            {transaction.type === 'reward' ? (
-                              <ArrowDownLeft className="text-green-600" size={20} />
-                            ) : (
-                              <ArrowUpRight className="text-red-600" size={20} />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{transaction.description}</p>
-                            <p className="text-sm text-gray-600">
-                              {new Date(transaction.date).toLocaleDateString('id-ID')}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-semibold ${
-                            transaction.type === 'reward' ? 'text-green-600' : 'text-red-600'
-                          } text-lg`}>
-                            {transaction.type === 'reward' ? '+' : ''}{formatCurrency(transaction.amount)}
-                          </p>
-                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                            transaction.status === 'completed'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-orange-100 text-orange-700'
-                          }`}>
-                            {transaction.status === 'completed' ? 'Selesai' : 'Pending'}
-                          </span>
-                        </div>
-                      </div>
+                    {categories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
                     ))}
-                  </div>
-                )}
-
-                {activeTab === 'withdraw' && (
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-gray-900 mb-6 text-lg">Metode Penarikan</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {withdrawalMethods.map((method) => (
-                        <div key={method.id} className="border border-gray-200 rounded-2xl p-6 hover:border-[#003399] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-2xl">
-                                {method.icon}
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-gray-900">{method.name}</h4>
-                                <p className="text-sm text-gray-500">{method.description}</p>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3 mb-6">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Minimum:</span>
-                              <span className="font-semibold text-gray-900">{formatCurrency(method.minAmount)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Biaya admin:</span>
-                              <span className="font-semibold text-gray-900">{formatCurrency(method.fee)}</span>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={() => handleWithdrawal(method.name)}
-                            disabled={(user?.balance || 0) < method.minAmount}
-                            className="w-full bg-gradient-to-r from-[#003399] to-blue-600 text-white py-3 px-4 rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
-                          >
-                            {(user?.balance || 0) < method.minAmount ? 'Saldo Tidak Cukup' : 'Tarik Dana'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  </select>
+                </div>
               </div>
             </div>
+
+            {/* Rewards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredRewards.map((reward) => (
+                <div key={reward.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                  <div className="relative">
+                    <img 
+                      src={reward.image} 
+                      alt={reward.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        reward.category === 'service' ? 'bg-blue-100 text-blue-700' :
+                        reward.category === 'merchandise' ? 'bg-green-100 text-green-700' :
+                        reward.category === 'accessories' ? 'bg-purple-100 text-purple-700' :
+                        'bg-orange-100 text-orange-700'
+                      }`}>
+                        {categories.find(c => c.value === reward.category)?.label}
+                      </span>
+                    </div>
+                    {reward.stock <= 5 && reward.stock > 0 && (
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                          Stok Terbatas
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2">{reward.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{reward.description}</p>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-1">
+                        <Star className="text-yellow-400" size={16} />
+                        <span className="font-bold text-purple-600 text-lg">
+                          {reward.points.toLocaleString('id-ID')} poin
+                        </span>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        Stok: {reward.stock}
+                      </span>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleRedeem(reward.id)}
+                      disabled={!user || user.balance < reward.points || reward.stock <= 0}
+                      className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                        !user || user.balance < reward.points || reward.stock <= 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg hover:scale-105'
+                      }`}
+                    >
+                      {reward.stock <= 0 ? 'Stok Habis' :
+                       !user || user.balance < reward.points ? 'Poin Tidak Cukup' : 'Tukar Sekarang'}
+                    </button>
+                    
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Berlaku hingga {reward.validUntil.toLocaleDateString('id-ID')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredRewards.length === 0 && (
+              <div className="text-center py-16 bg-white rounded-2xl">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Gift size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Tidak ada reward ditemukan</h3>
+                <p className="text-gray-500 mb-6">Coba ubah filter atau kata kunci pencarian</p>
+                <button 
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                  }}
+                  className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>
