@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Filter, Search, Sparkles, RefreshCw } from 'lucide-react';
 import Header from '../components/Layout/Header';
 import Sidebar from '../components/Layout/Sidebar';
@@ -10,6 +11,7 @@ import { formatCurrency } from '../utils/format';
 
 export default function Tasks() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -58,9 +60,12 @@ export default function Tasks() {
 
   const handleTakeTask = async (taskId: string) => {
     try {
-      // In a real app, this would create a submission or mark task as taken
+      const t = tasks.find(t => t.id === taskId);
+      if (t && t.category === 'survey') {
+        navigate(`/tasks/survey/${taskId}`);
+        return;
+      }
       alert(`Mengambil tugas dengan ID: ${taskId}`);
-      // You could navigate to a submission form here
     } catch (error) {
       console.error('Error taking task:', error);
       alert('Gagal mengambil tugas. Silakan coba lagi.');

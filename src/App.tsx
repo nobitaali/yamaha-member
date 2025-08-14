@@ -12,6 +12,7 @@ import Tasks from './pages/Tasks';
 import Rewards from './pages/Rewards';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import SurveyForm from './pages/SurveyForm';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -62,6 +63,7 @@ console.log(user.role,'test')
           <>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/tasks/survey/:taskId" element={<SurveyForm />} />
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

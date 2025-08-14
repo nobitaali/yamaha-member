@@ -201,6 +201,23 @@ export const mockTasks: Task[] = [
     status: 'active',
     createdBy: '1',
     createdAt: new Date('2025-01-11')
+  },
+  {
+    id: '9',
+    title: 'Survey Preferensi Fitur Aplikasi Yamaha Member',
+    description: 'Isi kuesioner singkat tentang fitur yang paling Anda butuhkan di aplikasi Yamaha Member. Bantu kami memprioritaskan pengembangan fitur.',
+    reward: 40000,
+    deadline: new Date('2025-03-15'),
+    category: 'survey',
+    requirements: [
+      'Jawab 15 pertanyaan pilihan ganda',
+      'Isi minimal 3 feedback terbuka',
+      'Pastikan data sesuai penggunaan Anda',
+      'Hanya dapat diisi satu kali'
+    ],
+    status: 'active',
+    createdBy: '1',
+    createdAt: new Date('2025-01-20')
   }
 ];
 
