@@ -56,42 +56,43 @@ export default function Profile() {
   const renderProfile = () => (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+      <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-r from-[#003399] via-[#0b2a8f] to-[#001e6e] p-6 text-white">
+        <div className="absolute -top-8 -right-8 w-36 h-36 sm:w-44 sm:h-44 bg-white/10 rounded-full" />
+        <div className="absolute -bottom-10 -left-10 w-24 h-24 sm:w-32 sm:h-32 bg-white/5 rounded-full" />
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           <div className="relative">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-[#003399] to-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full ring-4 ring-white/20 shadow-lg overflow-hidden bg-white/10 flex items-center justify-center">
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover" />
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-white text-2xl font-bold">
                   {user?.name?.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
-            <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <Camera size={16} className="text-gray-600" />
+            <button className="absolute bottom-0 right-0 bg-white text-[#003399] rounded-full p-2 shadow-lg border border-white/50 hover:bg-white/90 transition-colors">
+              <Camera size={16} />
             </button>
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">{user?.name}</h2>
-            <p className="text-gray-600 mb-2">{user?.email}</p>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <Star className="text-yellow-400" size={16} />
-                <span className="text-sm font-semibold text-gray-700">
-                  {user?.balance && user.balance > 200000 ? 'Gold Member' : 
-                   user?.balance && user.balance > 100000 ? 'Silver Member' : 'Bronze Member'}
-                </span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Trophy className="text-blue-500" size={16} />
-                <span className="text-sm font-semibold text-gray-700">
-                  Level {Math.floor((totalPoints / 300)) + 1}
-                </span>
-              </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-2xl font-bold mb-1">{user?.name}</h2>
+            <p className="text-blue-100 mb-2 break-words">{user?.email}</p>
+            <p className="text-xs text-blue-100/90 mb-3">
+              Member sejak {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('id-ID') : '-'}
+            </p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 border border-white/20">
+                <Star size={14} className="text-yellow-300" />
+                {user?.balance && user.balance > 200000 ? 'Gold Member' : 
+                 user?.balance && user.balance > 100000 ? 'Silver Member' : 'Bronze Member'}
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 border border-white/20">
+                <Trophy size={14} className="text-white" />
+                Level {Math.floor((totalPoints / 300)) + 1}
+              </span>
             </div>
           </div>
-          <button className="w-full sm:w-auto mt-4 sm:mt-0 bg-[#003399] text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors flex items-center space-x-2">
+          <button className="w-full sm:w-auto mt-4 sm:mt-0 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-5 py-2.5 rounded-xl font-semibold backdrop-blur-sm flex items-center justify-center gap-2">
             <Edit size={18} />
             <span>Edit Profile</span>
           </button>
@@ -99,7 +100,7 @@ export default function Profile() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
@@ -227,7 +228,7 @@ export default function Profile() {
         <h3 className="text-lg font-bold text-gray-900 mb-4">Transaksi Terbaru</h3>
         <div className="space-y-4">
           {transactions.slice(0, 5).map((transaction) => (
-            <div key={transaction.id} className={`flex items-center justify-between p-4 rounded-xl ${
+            <div key={transaction.id} className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl ${
               transaction.type === 'reward' ? 'bg-green-50' : 'bg-red-50'
             }`}>
               <div className="flex items-center space-x-3">
@@ -239,17 +240,17 @@ export default function Profile() {
                     <ArrowUpRight className="text-red-600" size={20} />
                   }
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-gray-900">
                     {transaction.type === 'reward' ? 'Reward Diterima' : 'Penarikan Saldo'}
                   </p>
-                  <p className="text-sm text-gray-600">{transaction.description}</p>
+                  <p className="text-sm text-gray-600 break-words">{transaction.description}</p>
                   <p className="text-xs text-gray-500">
                     {transaction.createdAt.toLocaleDateString('id-ID')}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="w-full sm:w-auto text-left sm:text-right">
                 <span className={`font-bold ${
                   transaction.type === 'reward' ? 'text-green-600' : 'text-red-600'
                 }`}>
@@ -283,7 +284,7 @@ export default function Profile() {
         <h3 className="text-lg font-bold text-gray-900 mb-4">Riwayat Aktivitas</h3>
         <div className="space-y-4">
           {userSubmissions.map((submission) => (
-            <div key={submission.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl">
+            <div key={submission.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border border-gray-200 rounded-xl">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                 submission.status === 'approved' ? 'bg-green-100' :
                 submission.status === 'rejected' ? 'bg-red-100' : 'bg-yellow-100'
@@ -303,7 +304,7 @@ export default function Profile() {
                   {submission.submittedAt.toLocaleDateString('id-ID')} - {submission.submittedAt.toLocaleTimeString('id-ID')}
                 </p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              <span className={`self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold ${
                 submission.status === 'approved' ? 'bg-green-100 text-green-700' :
                 submission.status === 'rejected' ? 'bg-red-100 text-red-700' :
                 'bg-yellow-100 text-yellow-700'
@@ -383,7 +384,7 @@ export default function Profile() {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -392,22 +393,22 @@ export default function Profile() {
           onMenuClick={() => setSidebarOpen(true)}
         />
         
-        <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-4">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-20 lg:pb-4">
           <div className="max-w-4xl mx-auto">
             {/* Tab Navigation */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
-              <div className="flex overflow-x-auto whitespace-nowrap space-x-2 p-2 -m-2 pr-2">
+              <div className="grid grid-cols-4 gap-2 p-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`shrink-0 flex items-center space-x-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                    className={`w-full flex flex-col items-center gap-1 px-2 py-2 rounded-xl font-medium text-xs transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-[#003399] text-white shadow-lg'
+                        ? 'bg-gradient-to-r from-[#003399] to-blue-600 text-white shadow-lg'
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    <tab.icon size={18} />
+                    <tab.icon size={16} />
                     <span>{tab.label}</span>
                   </button>
                 ))}
