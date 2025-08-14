@@ -75,8 +75,7 @@ export function usePWA() {
           'Untuk menginstall aplikasi ini:\n\n' +
           '1. Klik menu Chrome (⋮) di pojok kanan atas\n' +
           '2. Pilih "Install Yamaha Loyalty Program"\n' +
-          '3. Atau cari opsi "Add to Home screen"\n\n' +
-          'Jika tidak ada opsi install, pastikan Anda menggunakan HTTPS atau localhost'
+          '3. Atau cari opsi "Add to Home screen"\n\n' 
         );
       } else {
         alert(
