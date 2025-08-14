@@ -1,0 +1,25 @@
+{
+  "name": "Yamaha Loyalty Program",
+  "short_name": "YamahaLoyalty",
+  "description": "Program loyalitas customer Yamaha Motor Indonesia",
+  "theme_color": "#003399",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+ 
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+import React, { useState } from 'react';
+import { Filter, Search, Sparkles } from 'lucide-react';
+import Header from '../components/Layout/Header';
+import Sidebar from '../components/Layout/Sidebar';
+import TaskCard from '../components/UI/TaskCard';
+import FloatingActionButton from '../components/UI/FloatingActionButton';
+
+export default function Tasks() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const tasks = [
+    {
+      id: '1',
+      title: 'Review Service Yamaha',
+      description: 'Berikan review pengalaman service motor Yamaha Anda dan upload foto struk service.',
+      reward: 50000,
+      deadline: '2025-01-20',
+      category: 'service',
+      location: 'Semua Dealer',
+      requirements: ['Foto struk service', 'Review min. 50 kata', 'Rating 1-5 bintang'],
+      participants: 245,
+      maxParticipants: 500
+    },
+    {
+      id: '2',
+      title: 'Share Foto Motor di Social Media',
+      description: 'Posting foto motor Yamaha Anda di Instagram/Facebook dengan hashtag #YamahaIndonesia',
+      reward: 25000,
+      deadline: '2025-01-25',
+      category: 'social',
+      location: 'Online',
+      requirements: ['Posting di Instagram/Facebook', 'Hashtag #YamahaIndonesia', 'Tag 3 teman'],
+      participants: 1230,
+      maxParticipants: 2000
+    },
+    {
+      id: '3',
+      title: 'Survey Kepuasan Pelanggan Q1 2025',
+      description: 'Isi survey kepuasan pelanggan untuk membantu Yamaha meningkatkan layanan.',
+      reward: 30000,
+      deadline: '2025-01-30',
+      category: 'survey',
+      location: 'Online',
+      requirements: ['Lengkapi semua pertanyaan', 'Submit dalam 1x kesempatan'],
+      participants: 856,
+      maxParticipants: 1000
+    },
+    {
+      id: '4',
+      title: 'Test Ride Yamaha NMAX',
+      description: 'Ikuti test ride NMAX terbaru dan berikan feedback pengalaman berkendara.',
+      reward: 75000,
+      deadline: '2025-01-22',
+      category: 'testride',
+      location: 'Dealer Jakarta, Bandung, Surabaya',
+      requirements: ['Hadir di dealer', 'SIM C aktif', 'Form feedback'],
+      participants: 89,
+      maxParticipants: 150
+    }
+  ];
+
+  const categories = [
+    { value: 'all', label: 'Semua' },
+    { value: 'service', label: 'Service' },
+    { value: 'social', label: 'Social Media' },
+    { value: 'survey', label: 'Survey' },
+    { value: 'testride', label: 'Test Ride' }
+  ];
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesCategory = selectedCategory === 'all' || task.category === selectedCategory;
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         task.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleTakeTask = (taskId: string) => {
+    alert(`Mengambil tugas dengan ID: ${taskId}`);
+  };
+
+  const handleViewDetails = (taskId: string) => {
+    alert(`Melihat detail tugas dengan ID: ${taskId}`);
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header
+          title="Tugas Tersedia"
+          onMenuClick={() => setSidebarOpen(true)}
+        />
+        
+        <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-4">
+          <div className="max-w-7xl mx-auto">
+            {/* Hero Section */}
+            <div className="bg-gradient-to-r from-[#003399] to-blue-600 rounded-3xl p-6 mb-6 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -translate-y-16 translate-x-16" />
+              <div className="relative z-10">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Sparkles className="text-yellow-400" size={24} />
+                  <h2 className="text-2xl font-bold">Tugas Tersedia</h2>
+                </div>
+                <p className="text-blue-100 mb-4">
+                  {filteredTasks.length} tugas menanti Anda dengan total reward hingga{' '}
+                  <span className="font-bold text-yellow-400">
+                    Rp {filteredTasks.reduce((sum, task) => sum + task.reward, 0).toLocaleString('id-ID')}
+                  </span>
+                </p>
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full" />
+                    <span>{filteredTasks.filter(t => t.category === 'service').length} Service</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-pink-400 rounded-full" />
+                    <span>{filteredTasks.filter(t => t.category === 'social').length} Social Media</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                    <span>{filteredTasks.filter(t => t.category === 'testride').length} Test Ride</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-gray-100">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Cari tugas..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#003399] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                
+                {/* Category Filter */}
+                <div className="flex items-center space-x-3">
+                  <Filter size={20} className="text-gray-400" />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#003399] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                  >
+                    {categories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Tasks Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onTakeTask={handleTakeTask}
+                  onViewDetails={handleViewDetails}
+                />
+              ))}
+            </div>
+
+            {filteredTasks.length === 0 && (
+              <div className="text-center py-16 bg-white rounded-2xl">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Tidak ada tugas ditemukan</h3>
+                <p className="text-gray-500 mb-6">Coba ubah filter atau kata kunci pencarian</p>
+                <button 
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                  }}
+                  className="bg-[#003399] text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            )}
+            
+            <FloatingActionButton
+              onClick={() => alert('Refresh tugas')}
+              icon={<Sparkles size={24} />}
+            />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
