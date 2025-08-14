@@ -57,11 +57,11 @@ export default function Profile() {
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center space-x-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           <div className="relative">
-            <div className="w-24 h-24 bg-gradient-to-r from-[#003399] to-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-[#003399] to-blue-600 rounded-full flex items-center justify-center">
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-24 h-24 rounded-full object-cover" />
+                <img src={user.avatar} alt={user.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover" />
               ) : (
                 <span className="text-white text-2xl font-bold">
                   {user?.name?.charAt(0).toUpperCase()}
@@ -91,7 +91,7 @@ export default function Profile() {
               </div>
             </div>
           </div>
-          <button className="bg-[#003399] text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors flex items-center space-x-2">
+          <button className="w-full sm:w-auto mt-4 sm:mt-0 bg-[#003399] text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors flex items-center space-x-2">
             <Edit size={18} />
             <span>Edit Profile</span>
           </button>
@@ -208,7 +208,7 @@ export default function Profile() {
       <div className="bg-gradient-to-r from-[#003399] to-blue-600 rounded-2xl p-6 text-white">
         <h3 className="text-xl font-bold mb-2">Saldo Reward Anda</h3>
         <p className="text-3xl font-bold mb-4">{formatCurrency(user?.balance || 0)}</p>
-        <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
           <button className="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-colors flex items-center space-x-2">
             <CreditCard size={18} />
             <span>Tarik Saldo</span>
@@ -383,7 +383,7 @@ export default function Profile() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -396,12 +396,12 @@ export default function Profile() {
           <div className="max-w-4xl mx-auto">
             {/* Tab Navigation */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
-              <div className="flex space-x-1 p-2">
+              <div className="flex overflow-x-auto whitespace-nowrap space-x-2 p-2 -m-2 pr-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                    className={`shrink-0 flex items-center space-x-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
                       activeTab === tab.id
                         ? 'bg-[#003399] text-white shadow-lg'
                         : 'text-gray-600 hover:bg-gray-100'

@@ -88,7 +88,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -115,7 +115,7 @@ export default function Dashboard() {
                       Anda sudah menyelesaikan <span className="font-semibold text-yellow-300">{completedTasks}</span> tugas bulan ini
                     </p>
                   </div>
-                  <div className="flex items-center justify-between sm:flex-col sm:items-end sm:space-y-2">
+                  <div className="flex flex-col items-start space-y-2 sm:flex-col sm:items-end sm:space-y-2">
                     <div className="flex items-center space-x-1">
                       <Star className="text-yellow-400" size={16} />
                       <span className="text-sm font-semibold">
@@ -147,7 +147,7 @@ export default function Dashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
               {stats.map((stat, index) => (
                 <StatsCard
                   key={index}
